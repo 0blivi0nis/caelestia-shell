@@ -11,7 +11,6 @@ import Quickshell
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 
 ColumnLayout {
     id: root
@@ -113,7 +112,7 @@ ColumnLayout {
             implicitWidth: implicitHeight
             implicitHeight: scanIcon.implicitHeight + Appearance.padding.normal * 2
 
-            radius: Bluetooth.defaultAdapter?.discovering ? Appearance.rounding.normal : implicitHeight / 2
+            radius: Bluetooth.defaultAdapter?.discovering ? Appearance.rounding.normal : implicitHeight / 2 * Math.min(1, Appearance.rounding.scale)
             color: Bluetooth.defaultAdapter?.discovering ? Colours.palette.m3secondary : Colours.palette.m3secondaryContainer
 
             StateLayer {
@@ -143,8 +142,11 @@ ColumnLayout {
     }
 
     StyledListView {
+        id: view
+
         model: ScriptModel {
             id: deviceModel
+
             values: [...Bluetooth.devices.values].sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired))
         }
 
@@ -153,7 +155,9 @@ ColumnLayout {
         clip: true
         spacing: Appearance.spacing.small / 2
 
-        ScrollBar.vertical: StyledScrollBar {}
+        StyledScrollBar.vertical: StyledScrollBar {
+            flickable: view
+        }
 
         delegate: StyledRect {
             id: device
@@ -242,7 +246,7 @@ ColumnLayout {
                     radius: Appearance.rounding.full
                     color: Qt.alpha(Colours.palette.m3primaryContainer, device.connected ? 1 : 0)
 
-                    StyledBusyIndicator {
+                    CircularIndicator {
                         anchors.fill: parent
                         running: device.loading
                     }
@@ -290,7 +294,7 @@ ColumnLayout {
         implicitWidth: toggleBtnInner.implicitWidth + Appearance.padding.large * 2
         implicitHeight: toggleBtnIcon.implicitHeight + Appearance.padding.normal * 2
 
-        radius: toggled || toggleStateLayer.pressed ? Appearance.rounding.small : Math.min(width, height) / 2
+        radius: toggled || toggleStateLayer.pressed ? Appearance.rounding.small : Math.min(width, height) / 2 * Math.min(1, Appearance.rounding.scale)
         color: toggled ? Colours.palette[`m3${accent.toLowerCase()}`] : Colours.palette[`m3${accent.toLowerCase()}Container`]
 
         StateLayer {
@@ -348,11 +352,5 @@ ColumnLayout {
                 easing.bezierCurve: Appearance.anim.curves.expressiveFastSpatial
             }
         }
-    }
-
-    component Anim: NumberAnimation {
-        duration: Appearance.anim.durations.normal
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Appearance.anim.curves.standard
     }
 }

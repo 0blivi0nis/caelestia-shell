@@ -35,7 +35,15 @@ ColumnLayout {
 
         animate: true
         text: {
-            const label = Config.bar.workspaces.label || root.ws;
+            const ws = Hypr.workspaces.values.find(w => w.id === root.ws);
+            const wsName = !ws || ws.name == root.ws ? root.ws : ws.name[0];
+            let displayName = wsName.toString();
+            if (Config.bar.workspaces.capitalisation.toLowerCase() === "upper") {
+                displayName = displayName.toUpperCase();
+            } else if (Config.bar.workspaces.capitalisation.toLowerCase() === "lower") {
+                displayName = displayName.toLowerCase();
+            }
+            const label = Config.bar.workspaces.label || displayName;
             const occupiedLabel = Config.bar.workspaces.occupiedLabel || label;
             const activeLabel = Config.bar.workspaces.activeLabel || (root.isOccupied ? occupiedLabel : label);
             return root.activeWsId === root.ws ? activeLabel : root.isOccupied ? occupiedLabel : label;
@@ -80,7 +88,7 @@ ColumnLayout {
 
             Repeater {
                 model: ScriptModel {
-                    values: Hyprland.toplevels.values.filter(c => c.workspace?.id === root.ws)
+                    values: Hypr.toplevels.values.filter(c => c.workspace?.id === root.ws)
                 }
 
                 MaterialIcon {
@@ -96,11 +104,5 @@ ColumnLayout {
 
     Behavior on Layout.preferredHeight {
         Anim {}
-    }
-
-    component Anim: NumberAnimation {
-        duration: Appearance.anim.durations.normal
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Appearance.anim.curves.standard
     }
 }
